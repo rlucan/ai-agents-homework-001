@@ -1,0 +1,68 @@
+$ uv run tools.py
+SQL agent (clean tool calling). 'exit' pro konec.
+
+You: Who are you?
+
+*** Assistant:
+Jsem backendní asistent programovaný pro odpovídání na otázky a poskytování pomoci v různých oblastech. Můžete mi položit otázku nebo zadat úkol, a snažím se ho co nejlepším způsobem vyřešit.
+
+You: Zanalyzuj nasledujici SQL dotaz: SELECT * FROM products WHERE product_id = 100 AND available_count > 10
+
+*** Tool call: analyze_sql {'dialect': 'mysql', 'query': 'SELECT * FROM products WHERE product_id = 100 AND available_count > 10'}
+
+
+*** simple SQL:
+
+
+*** Assistant:
+Pro zlepšení výkonu vašeho SQL dotazu by mohlo být užitečné přidat index na sloupce `product_id` a `available_count`. Tento index pomůže databázi rychleji najít řádky, které splňují podmínky `WHERE product_id = 100 AND available_count > 10`, což může zlepšit výkon vašeho dotazu.
+
+You: Zanalyzuj nasledujici SQL dotaz: SELECT u.id, u.email, COUNT(o.id) AS order_count, SUM(o.total_price) AS total_spent FROM users u JOIN orders o ON o.user_id = u.id WHERE o.status = 'PAID' AND o.created_at >= '2024-01-01' GROUP BY u.id, u.email HAVING SUM(o.total_price) > 1000 ORDER BY total_spent DESC;
+
+*** Tool call: analyze_sql {'dialect': 'mysql', 'query': "SELECT u.id, u.email, COUNT(o.id) AS order_count, SUM(o.total_price) AS total_spent FROM users u JOIN orders o ON o.user_id = u.id WHERE o.status = 'PAID' AND o.created_at >= '2024-01-01' GROUP BY u.id, u.email HAVING SUM(o.total_price) > 1000 ORDER BY total_spent DESC;"}
+
+
+*** Complex SQL, calling expert LLM:
+
+
+*** Assistant:
+Pro optimalizaci výkonu vašeho SQL dotazu by měly být uváženy následující indexy:
+
+1. **Index na `orders.user_id`**: Tento index pomůže rychleji provést JOIN operaci mezi tabulkami `users` a `orders`.
+2. **Index na `orders.status`**: Tento index zlepší filtraci objednávek s stavem 'PAID'.
+3. **Kompozitní index na `orders.created_at`**: Index na tento sloupec pomůže rychleji filtrovat podle data vytvoření.
+4. **Kompozitní index na `users.id` a `users.email` (pokud je to potřeba pro optimalizaci pořadí a shromažďování)**: Tento kompozitní index pomůže rychleji řadit a shromáždovat výsledky.
+
+Toto jsou kódy pro vytvoření těchto indexů:
+
+```sql
+-- Index na orders.user_id
+CREATE INDEX idx_orders_user_id ON orders(user_id);
+
+-- Index na orders.status
+CREATE INDEX idx_orders_status ON orders(status);
+
+-- Kompozitní index na orders.created_at
+CREATE INDEX idx_orders_created_at ON orders(created_at);
+
+-- Kompozitní index na users.id a users.email (pokud je to potřeba pro optimalizaci pořadí a shromažďování)
+CREATE INDEX idx_users_id_email ON users(id, email);
+```
+
+### Vysvětlení:
+
+1. **`idx_orders_user_id`**: Tento index zlepší rychlost JOIN operace mezi `users` a `orders` podle `user_id`.
+2. **`idx_orders_status`**: Index na stav objednávek pomůže rychleji filtovat objednávky s stavem 'PAID'.
+3. **`idx_orders_created_at`**: Index na `created_at` zlepší filtraci podle data vytvoření.
+4. **`idx_users_id_email`**: Pokud je potřeba optimalizovat pořadí a shromažďování, tento kompozitní index pomůže rychleji řadit a shromáždovat výsledky.
+
+### Důvěrnost:
+
+- Zohledněte, že sloupce v těchto indexech nejsou součástí větších tabulek, pokud to není nutné. Přidávání příliš mnoha indexů může zvýšit časy na zapsávání (INSERT, UPDATE, DELETE).
+- Po vytvoření těchto indexů sledujte výkon vašeho dotazu. Někdy by mohlo být potřeba dál provádět analýzu a optimalizace na základě skutečného plánu provedení dotazu.
+- Pokud máte další podmínky nebo JOIN, které by mohly prospět indexem, zvažte přidání vhodných dalších indexů.
+
+Případně budete muset provést další analýzu a optimalizaci na základě skutečného plánu provedení dotazu.
+
+You: exit
+(homework-01)
