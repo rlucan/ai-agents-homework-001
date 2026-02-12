@@ -14,11 +14,6 @@ ROUTER_MODEL = "qwen2.5:7b"
 EXPERT_MODEL = "qwen2.5-coder:7b"
 DIALECT_DEFAULT = "mysql"
 
-# agent analyzujici SQL dotaz.
-# Pokud uzivatel pozada o analyzu SQL dotazu, pouzije se analyze_sql tool.
-# Tento tool overi, zda se jedna o jednoduchy dotaz - pro ucely tohoto cviceni prosty select maximalne s where podminkou - a pak doporuci indexovat sloupce, pouzite ve wehere podmince.
-# Pokud se jedna o slozitejsi dotaz, zavola se expert LLM.
-
 # ===============================
 # Tool definition (schema only)
 # ===============================
